@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة بيان - النسخة الذكية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #1A56DB; --bg: #f8fafc; }
+        body { font-family: 'Cairo', sans-serif; background-color: var(--bg); padding: 15px; margin: 0; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        h1 { color: var(--primary); font-size: 22px; text-align: center; margin-bottom: 20px; }
+        label { display: block; margin: 15px 0 5px; font-weight: bold; color: #374151; }
+        input, textarea { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        .btn { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 10px; font-weight: bold; margin-top: 25px; cursor: pointer; font-size: 16px; }
+        .btn:disabled { background: #94a3b8; }
+        #output { margin-top: 20px; padding: 15px; border: 2px dashed var(--primary); border-radius: 10px; background: #eff6ff; white-space: pre-wrap; color: #1e40af; min-height: 80px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>✨ منصة بيان الذكية</h1>
+    
+    <label>اسم الطالب/ة:</label>
+    <input type="text" id="studentName" placeholder="مثال: أحمد خالد">
+
+    <label>ملاحظات المعلم:</label>
+    <textarea id="notes" rows="4" placeholder="اكتب ملاحظاتك (مثل: الطالب متميز في لغتي لكن يحتاج تحسين الخط)"></textarea>
+
+    <button id="genBtn" class="btn" onclick="generateAI()">توليد وحفظ التقرير بذكاء Gemini</button>
+
+    <div id="output">سيظهر التقرير التربوي هنا...</div>
+</div>
+
+<script>
+    async function generateAI() {
+        const name = document.getElementById('studentName').value;
+        const noteText = document.getElementById('notes').value;
+        const outputDiv = document.getElementById('output');
+        const btn = document.getElementById('genBtn');
+
+        if (!noteText) return alert("يرجى كتابة الملاحظات أولاً");
+
+        // تعطيل الزر أثناء المعالجة
+        btn.disabled = true;
+        outputDiv.innerText = "جاري الصياغة التربوية بذكاء Gemini وحفظ البيانات في الشؤون العامة...";
+
+        try {
+            // الاتصال بالمعالج api/generate.js الذي أنشأته
+            const response = await fetch('/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ studentName: name, notes: noteText })
+            });
+
+            const data = await response.json();
+            
+            if (data.text) {
+                outputDiv.innerText = data.text;
+                alert("تم التوليد والحفظ في Supabase بنجاح! 🎉");
+            } else {
+                throw new Error("خطأ في البيانات");
+            }
+        } catch (error) {
+            outputDiv.innerText = "حدث خطأ! تأكد من إعدادات المفاتيح في Vercel.";
+            console.error(error);
+        } finally {
+            btn.disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>
